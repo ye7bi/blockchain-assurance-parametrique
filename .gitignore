@@ -9,9 +9,8 @@ latex/*.snm
 latex/*.toc
 latex/*.vrb
 
-# Python
-simulation/src/__pycache__/
-simulation/__pycache__/
+# Python — fichiers générés
+simulation/results/
 **/*.pyc
 **/__pycache__/
 
