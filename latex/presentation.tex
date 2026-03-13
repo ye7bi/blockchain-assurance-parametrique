@@ -1,0 +1,953 @@
+% ============================================================================
+% Smart Contracts & Assurance Paramétrique Agricole — Présentation Beamer
+% ECE Paris — ING4 Finance et Ingénierie Quantitative — Groupe 3
+% ============================================================================
+%
+% INSTRUCTIONS OVERLEAF :
+%   1. Créer un nouveau projet sur overleaf.com
+%   2. Uploader ce fichier .tex
+%   3. Créer un dossier "figures/" et uploader les 12 .png depuis
+%      simulation/results/figures/
+%   4. Compiler avec pdfLaTeX
+%
+% ============================================================================
+
+\documentclass[aspectratio=169, 10pt, t]{beamer}
+
+% ─── Thème & couleurs ────────────────────────────────────────────────────────
+\usetheme{Madrid}
+
+% Bleu ECE / corporate
+\definecolor{MainBlue}{RGB}{0, 70, 140}
+\definecolor{AccentBlue}{RGB}{30, 120, 200}
+\definecolor{LightBlue}{RGB}{220, 235, 252}
+\definecolor{DarkGrey}{RGB}{50, 50, 50}
+\definecolor{SuccessGreen}{RGB}{34, 139, 34}
+\definecolor{WarnOrange}{RGB}{220, 100, 0}
+\definecolor{AlertRed}{RGB}{180, 0, 0}
+\definecolor{SolidityGrey}{RGB}{40, 44, 52}
+
+\usecolortheme[named=MainBlue]{structure}
+
+% Ajustements footer Madrid
+\setbeamercolor{palette primary}{bg=MainBlue,   fg=white}
+\setbeamercolor{palette secondary}{bg=AccentBlue, fg=white}
+\setbeamercolor{palette tertiary}{bg=MainBlue,   fg=white}
+\setbeamercolor{palette quaternary}{bg=MainBlue,  fg=white}
+\setbeamercolor{block title}{bg=MainBlue, fg=white}
+\setbeamercolor{block body}{bg=LightBlue, fg=DarkGrey}
+\setbeamercolor{block title alerted}{bg=AlertRed, fg=white}
+\setbeamercolor{block body alerted}{bg=red!8, fg=DarkGrey}
+\setbeamercolor{block title example}{bg=SuccessGreen, fg=white}
+\setbeamercolor{block body example}{bg=green!8, fg=DarkGrey}
+
+% ─── Encodage & langue ───────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+% ─── Packages ────────────────────────────────────────────────────────────────
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{amsmath, amssymb}
+\usepackage{mathtools}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta, shapes.geometric, positioning, fit, backgrounds}
+\usepackage{listings}
+\usepackage{fontawesome5}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{multicol}
+
+% ─── Style listings (Solidity / Python) ──────────────────────────────────────
+\lstdefinelanguage{Solidity}{
+  keywords={pragma, solidity, contract, function, mapping, address, uint256,
+            bool, string, bytes, public, private, external, internal, view,
+            pure, payable, returns, emit, event, modifier, require, if, else,
+            return, struct, interface, constructor, override, immutable,
+            memory, storage, calldata, true, false},
+  keywordstyle=\color{AccentBlue}\bfseries,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{SuccessGreen},
+  morestring=[b]",
+  sensitive=true,
+}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{SolidityGrey!10},
+  frame=single, framerule=0.4pt,
+  rulecolor=\color{MainBlue!40},
+  numbers=left, numberstyle=\tiny\color{gray},
+  numbersep=3pt,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2,
+  xleftmargin=6pt,
+}
+
+% ─── Commandes utiles ─────────────────────────────────────────────────────────
+\newcommand{\euro}{€}
+\newcommand{\trigger}{\texttt{trigger}}
+\newcommand{\payout}{\texttt{payout}}
+\newcommand{\highlight}[1]{\textbf{\color{MainBlue}#1}}
+\newcommand{\good}[1]{\textcolor{SuccessGreen}{\faCheckCircle\ #1}}
+\newcommand{\bad}[1]{\textcolor{AlertRed}{\faTimesCircle\ #1}}
+\newcommand{\warn}[1]{\textcolor{WarnOrange}{\faExclamationTriangle\ #1}}
+
+% Supprimer le titre du pied de page sur la page titre
+\makeatletter
+\setbeamertemplate{footline}{
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+      \usebeamerfont{author in head/foot}\insertshortauthor
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+      \usebeamerfont{title in head/foot}\insertshorttitle
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,right]{date in head/foot}%
+      \usebeamerfont{date in head/foot}
+      \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+    \end{beamercolorbox}}%
+  \vskip0pt%
+}
+\makeatother
+
+% ─── Métadonnées ─────────────────────────────────────────────────────────────
+\title[Smart Contracts \& Assurance Paramétrique]{%
+  \textbf{Smart contracts et assurance\\paramétrique agricole via blockchain}%
+}
+\subtitle{Sujet 8 --- Modélisation actuarielle \& simulation financière}
+
+\author[Wahbi \textperiodcentered\ Serac \textperiodcentered\ Jeaate]{%
+  Rania \textsc{Wahbi} \and
+  Antoine \textsc{Serac} \and
+  Louis \textsc{Jeaate}%
+}
+
+\institute[ECE Paris]{%
+  ING4 --- Finance et Ingénierie Quantitative --- Groupe 3\\[4pt]
+  \textbf{ECE Paris}\\[4pt]
+  Professeur Yann \textsc{Fornier}%
+}
+
+\date{2025--2026}
+
+% ─── Navigation dots désactivés ──────────────────────────────────────────────
+\setbeamertemplate{navigation symbols}{}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+% ─────────────────────────────────────────────────────────────────────────────
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SLIDE 1 — PAGE DE TITRE
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% SLIDE 2 — PLAN
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{frame}{Plan de la présentation}
+  \begin{columns}[t]
+    \column{0.50\textwidth}
+      \textbf{\color{MainBlue} Partie I — Fondations}
+      \begin{enumerate}
+        \item Contexte \& Problématique
+        \item Produit Assurantiel \& Architecture Web3
+        \item Modélisation Actuarielle du Risque
+        \item Simulation Financière
+      \end{enumerate}
+      \vspace{0.5em}
+      \textbf{\color{MainBlue} Partie II — Analyse des Risques}
+      \begin{enumerate}
+        \setcounter{enumi}{4}
+        \item Risque Moral \& Oracles
+        \item Basis Risk \& Limites
+        \item Synthèse \& Conclusion
+      \end{enumerate}
+    \column{0.47\textwidth}
+      \begin{block}{\small \faList\ Livrables attendus}
+        \small
+        \begin{enumerate}
+          \item Modélisation actuarielle du risque climatique
+          \item Simulation financière paramétrique
+          \item Analyse du risque moral (vs. traditionnel)
+          \item Fiabilité des oracles \& manipulation
+          \item Rentabilité assureur \& assuré
+        \end{enumerate}
+      \end{block}
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Contexte \& Problématique}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Blockchain : rappels essentiels}
+  \begin{columns}[c]
+    \column{0.55\textwidth}
+      \begin{itemize}
+        \item[\faCalendar] \textbf{2008} --- Satoshi Nakamoto publie le
+          \textit{Bitcoin White Paper}
+        \item[\faLink] Base de données \textbf{distribuée, immuable et
+          transparente}
+        \item[\faCode] Les \textbf{smart contracts} (Ethereum, 2015)
+          permettent d'automatiser des accords sans intermédiaire
+        \item[\faCertificate] \textit{« Si les termes et clauses du contrat
+          se réalisent, l'action se fera de manière algorithmique. »}\\
+          \hfill --- Cours Fornier, ECE Paris
+      \end{itemize}
+    \column{0.42\textwidth}
+      \begin{tikzpicture}[scale=0.85, every node/.style={font=\small}]
+        % Noeuds
+        \node[draw, fill=MainBlue!15, rounded corners, minimum width=2cm,
+              minimum height=0.7cm] (n1) at (0,2.5) {Partie 1};
+        \node[draw, fill=MainBlue!15, rounded corners, minimum width=2cm,
+              minimum height=0.7cm] (n2) at (3,2.5) {Partie 2};
+        \node[draw, fill=AccentBlue!20, rounded corners, minimum width=2.5cm,
+              minimum height=0.7cm] (sc) at (1.5,1.2) {Smart Contract};
+        \node[draw, fill=LightBlue, rounded corners, minimum width=3cm,
+              minimum height=0.7cm] (bc) at (1.5,0) {Blockchain};
+        % Flèches
+        \draw[-{Stealth}] (n1) -- node[above,sloped,font=\tiny]{signe} (sc);
+        \draw[-{Stealth}] (n2) -- node[above,sloped,font=\tiny]{signe} (sc);
+        \draw[-{Stealth}] (sc) -- node[right,font=\tiny]{validation} (bc);
+        % Labels
+        \node[font=\tiny, color=gray] at (1.5,-0.5) {immuable \& transparent};
+      \end{tikzpicture}
+  \end{columns}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{L'assurance paramétrique : principe}
+  \begin{block}{Définition}
+    Une assurance paramétrique verse une \textbf{indemnisation fixe et
+    automatique} dès qu'un \textbf{indicateur objectif} (météo, indice,
+    mesure physique) dépasse un seuil prédéfini, \emph{indépendamment de la
+    perte réelle}.
+  \end{block}
+
+  \begin{columns}[c]
+    \column{0.48\textwidth}
+      \textbf{Assurance traditionnelle}
+      \begin{itemize}
+        \item[\textcolor{AlertRed}{\faTimesCircle}] Expertise individuelle (30--90 j)
+        \item[\textcolor{AlertRed}{\faTimesCircle}] Risque moral élevé
+        \item[\textcolor{AlertRed}{\faTimesCircle}] Coûts admin. $\approx$ 30--40\,\%
+        \item[\textcolor{SuccessGreen}{\faCheckCircle}] Perte réelle couverte
+      \end{itemize}
+    \column{0.48\textwidth}
+      \textbf{Paramétrique blockchain}
+      \begin{itemize}
+        \item[\textcolor{SuccessGreen}{\faCheckCircle}] Payout auto. ($<\,1$ min)
+        \item[\textcolor{SuccessGreen}{\faCheckCircle}] Risque moral éliminé
+        \item[\textcolor{SuccessGreen}{\faCheckCircle}] Coûts admin. $\approx$ 5--10\,\%
+        \item[\textcolor{WarnOrange}{\faExclamationTriangle}] Basis risk présent
+      \end{itemize}
+  \end{columns}
+  \begin{alertblock}{Exemple réel : Fizzy by AXA (2017--2019)}
+    Première assurance française sur blockchain ---
+    indemnisation automatique si retard de vol $>$ 2h,
+    sans réclamation.
+    \hfill \textit{(Source : Cours Fornier, ECE Paris)}
+  \end{alertblock}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Problématique \& objectifs}
+  \begin{exampleblock}{Question centrale}
+    \centering
+    \textit{Dans quelle mesure un smart contract sur blockchain
+    peut-il constituer un véhicule viable pour une assurance
+    paramétrique agricole, sur les plans actuariel,
+    financier et opérationnel~?}
+  \end{exampleblock}
+
+  \begin{columns}[t]
+    \column{0.32\textwidth}
+      \centering
+      \textcolor{MainBlue}{\faCalculator}\\[4pt]
+      \textbf{Actuariat}\\[4pt]
+      Modéliser le risque climatique et calculer une prime équitable
+    \column{0.32\textwidth}
+      \centering
+      \textcolor{MainBlue}{\faChartLine}\\[4pt]
+      \textbf{Finance}\\[4pt]
+      Simuler la rentabilité pour l'assureur et l'assuré
+    \column{0.32\textwidth}
+      \centering
+      \textcolor{MainBlue}{\faExclamationTriangle}\\[4pt]
+      \textbf{Risques}\\[4pt]
+      Analyser le risque moral, le basis risk et les oracles
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Produit Assurantiel \& Architecture}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Description du produit}
+  \begin{columns}[c]
+    \column{0.52\textwidth}
+      \begin{block}{Caractéristiques}
+        \renewcommand{\arraystretch}{1.3}
+        \begin{tabular}{@{}ll@{}}
+          \toprule
+          \textbf{Risque couvert} & Sécheresse agricole \\
+          \textbf{Indicateur} & Précipitations (mm/an) \\
+          \textbf{Trigger} & $< 400$ mm/an \\
+          \textbf{Payout (C)} & 5\,000 \euro{} (fixe) \\
+          \textbf{Prime commerciale} & 950 \euro{}/an \\
+          \textbf{Durée} & 12 mois \\
+          \textbf{Blockchain} & Ethereum / Polygon \\
+          \textbf{Oracle} & Chainlink \\
+          \bottomrule
+        \end{tabular}
+      \end{block}
+    \column{0.45\textwidth}
+      \begin{block}{Logique paramétrique}
+        \centering
+        \begin{tikzpicture}[scale=0.8, every node/.style={font=\small}]
+          \node[draw, fill=LightBlue, rounded corners, minimum width=3cm,
+                minimum height=0.6cm] (oracle) at (0,2)
+                {\faCloud\ Oracle météo};
+          \node[draw, fill=AccentBlue!20, rounded corners, minimum width=3.5cm,
+                minimum height=0.6cm] (sc) at (0,1)
+                {\faCode\ Smart Contract};
+          \node[draw, fill=green!20, rounded corners, minimum width=2.5cm,
+                minimum height=0.6cm, text=SuccessGreen] (pay) at (-1.5,-0.2)
+                {\faCheckCircle\ Payout 5\,000\,\euro{}};
+          \node[draw, fill=red!10, rounded corners, minimum width=2.5cm,
+                minimum height=0.6cm, text=AlertRed] (nopay) at (1.5,-0.2)
+                {\faTimesCircle\ Rien (prime gardée)};
+          \draw[-{Stealth}] (oracle) -- (sc);
+          \draw[-{Stealth}] (sc) -- node[left,font=\tiny]{$<400$ mm} (pay);
+          \draw[-{Stealth}] (sc) -- node[right,font=\tiny]{$\geq400$ mm} (nopay);
+        \end{tikzpicture}
+      \end{block}
+  \end{columns}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Architecture Web3}
+  \begin{columns}[t]
+    \column{0.35\textwidth}
+      \small
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item[\textcolor{MainBlue}{\faUser}]
+          \textbf{Utilisateurs}\\
+          \footnotesize Agriculteur \& Assureur
+        \item[\textcolor{MainBlue}{\faGlobe}]
+          \textbf{Web App}\\
+          \footnotesize React + wagmi
+        \item[\textcolor{MainBlue}{\faCode}]
+          \textbf{Smart Contract}\\
+          \footnotesize \texttt{AgricultureInsurance.sol}
+        \item[\textcolor{MainBlue}{\faLink}]
+          \textbf{Blockchain}\\
+          \footnotesize Ethereum / Polygon
+        \item[\textcolor{MainBlue}{\faDatabase}]
+          \textbf{Oracle Chainlink}\\
+          \footnotesize NOAA, ERA5, Open-Meteo
+      \end{itemize}
+    \column{0.62\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.78, every node/.style={font=\tiny},
+          box/.style={draw, rounded corners=2pt, minimum height=0.55cm,
+                      text centered}]
+        % Utilisateurs
+        \node[box, fill=LightBlue, minimum width=1.7cm] (f) at (0.8,4) {\faUser\ Agriculteur};
+        \node[box, fill=LightBlue, minimum width=1.7cm] (i) at (2.7,4) {\faBuilding\ Assureur};
+        % Web App
+        \node[box, fill=LightBlue!70, minimum width=3.5cm] (w) at (1.75,3.2)
+          {\faGlobe\ Web App (React + wagmi)};
+        % Smart Contract
+        \node[box, fill=AccentBlue!30, minimum width=3.5cm] (sc) at (1.75,2.3)
+          {\faCode\ AgricultureInsurance.sol};
+        % Blockchain
+        \node[box, fill=MainBlue!15, minimum width=3.5cm] (bc) at (1.75,1.4)
+          {\faLink\ Ethereum / Polygon};
+        % Oracle
+        \node[box, fill=orange!25, minimum width=2cm] (cl) at (5.0,2.3)
+          {\faDatabase\ Chainlink DON};
+        \node[box, fill=orange!10, minimum width=2cm] (src) at (5.0,1.4)
+          {\faCloud\ NOAA / ERA5};
+        % Flèches
+        \draw[-{Stealth}] (f) -- (w);
+        \draw[-{Stealth}] (i) -- (w);
+        \draw[-{Stealth}] (w) -- node[right,font=\tiny]{calls} (sc);
+        \draw[-{Stealth}] (sc) -- (bc);
+        \draw[-{Stealth}] (cl) -- node[above,font=\tiny]{précip. (mm)} (sc);
+        \draw[-{Stealth}] (src) -- (cl);
+        \node[font=\tiny, color=gray] at (1.75,0.9) {immuable · transparent · décentralisé};
+      \end{tikzpicture}
+  \end{columns}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}[fragile,shrink=5]{Smart Contract Solidity --- Extrait clé}
+  \begin{columns}[c]
+    \column{0.55\textwidth}
+\begin{lstlisting}[language=Solidity, basicstyle=\ttfamily\scriptsize]
+function checkAndTriggerPayout(
+    uint256 policyId
+) external returns (bool) {
+    Policy storage p = policies[policyId];
+    require(!p.claimed, "Deja verse");
+    (uint256 precipMm, uint256 ts) =
+        weatherOracle.getPrecipitation(p.regionId);
+    require(block.timestamp - ts
+            <= ORACLE_MAX_AGE, "Oracle vieux");
+    if (precipMm < p.triggerMm) {
+        p.claimed = true;     // anti-reentrancy
+        p.insured.transfer(p.coverageAmount);
+        emit PayoutTriggered(...);
+        return true;
+    }
+    return false;
+}
+\end{lstlisting}
+    \column{0.42\textwidth}
+      \begin{block}{Points clés}
+        \begin{itemize}
+          \item \textbf{Automatique} : aucune intervention humaine
+          \item \textbf{Anti-reentrancy} : \texttt{claimed = true} avant le transfert
+          \item \textbf{Oracle check} : fraîcheur des données ($\leq 7$ j)
+          \item \textbf{Event} : trace immuable sur la blockchain
+        \end{itemize}
+      \end{block}
+      \begin{alertblock}{Sécurité}
+        \begin{itemize}
+          \item \texttt{onlyOwner} sur les fonctions admin
+          \item Rejet des ETH non sollicités (\texttt{receive()})
+          \item Interface oracle séparée
+        \end{itemize}
+      \end{alertblock}
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Modélisation Actuarielle}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Hypothèses du modèle climatique --- Livrable 1}
+  \begin{columns}[c]
+    \column{0.52\textwidth}
+      \begin{block}{Distribution lognormale}
+        Si $X$ = précipitations annuelles (mm), on suppose :
+        \[
+          \ln X \sim \mathcal{N}(\mu, \sigma^2)
+        \]
+        \textbf{Calibration} (France méditerranéenne) :
+        \begin{align*}
+          \mu    &= 6{,}30 \quad \Rightarrow \text{médiane} \approx 545 \text{ mm} \\
+          \sigma &= 0{,}30 \quad \Rightarrow \text{CV} \approx 30\,\%
+        \end{align*}
+        Propriétés :
+        \begin{itemize}
+          \item $\mathbb{E}[X] = e^{\mu + \sigma^2/2} \approx 570$ mm
+          \item Asymétrie positive --- cohérent avec l'hydrologie
+        \end{itemize}
+      \end{block}
+    \column{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/01_distribution_precipitations.png}
+      {\centering\tiny\footnotesize Distribution simulée (N=100\,000)\par}
+  \end{columns}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Calcul de la probabilité de sécheresse}
+  \begin{columns}[c]
+    \column{0.52\textwidth}
+      \textbf{Probabilité de déclenchement} $p$ :
+      \[
+        p = \mathbb{P}(X < 400) = \Phi\!\left(\frac{\ln 400 - \mu}{\sigma}\right)
+      \]
+      \[
+        = \Phi\!\left(\frac{5{,}991 - 6{,}30}{0{,}30}\right)
+        = \Phi(-1{,}03) \approx \mathbf{15{,}2\,\%}
+      \]
+
+      \begin{block}{Interprétation}
+        Une sécheresse déclencheuse survient en moyenne
+        \textbf{tous les 6--7 ans} --- cohérent avec
+        les observations historiques.
+      \end{block}
+      \textbf{Validation Monte Carlo} (N = 100\,000) :
+
+      $\hat{p} = 15{,}20\,\%$ vs $p_{th} = 15{,}19\,\%$ \quad \textcolor{SuccessGreen}{\faCheck}
+
+    \column{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/02_convergence_monte_carlo.png}
+      {\centering\tiny\footnotesize Convergence MC — Loi des grands nombres\par}
+  \end{columns}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Prime actuariellement équitable}
+  \begin{columns}[c]
+    \column{0.53\textwidth}
+      \begin{block}{Tarification actuarielle}
+        \footnotesize
+        \[
+          \pi_{\text{pure}} = p \cdot C
+          = 15{,}2\% \times 5\,000 = \mathbf{760\,\text{\euro/an}}
+        \]
+        \renewcommand{\arraystretch}{1.15}
+        \begin{tabular}{@{}ll@{}}
+          Prime commerciale $\pi_c$ & $\mathbf{950\,\text{\euro/an}}$ \\
+          Chargement $\lambda$       & $25\,\%$ \\
+          Loss Ratio                 & $\mathbf{80\,\%}$ \\
+          IC 95\,\%                  & $[\,749\,;\,771\,]$\,\euro \\
+          $\sigma[L]$                & $1\,795\,\text{\euro}$ \\
+        \end{tabular}
+      \end{block}
+    \column{0.44\textwidth}
+      \includegraphics[width=\textwidth]{figures/03_distribution_payout.png}
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Simulation Financière}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Rentabilité du portefeuille assureur --- Livrable 2 \& 5}
+  \begin{columns}[c]
+    \column{0.50\textwidth}
+      \begin{block}{Paramètres portefeuille}
+        \begin{itemize}
+          \item $N = 500$ assurés, horizon 20 ans
+          \item Primes collectées : $500 \times 950 = $ \textbf{475\,k\euro/an}
+          \item Sinistres espérés : $500 \times 0{,}152 \times 5\,000 = $ \textbf{380\,k\euro/an}
+          \item Profit moyen : \textbf{$\approx$\,100\,k\euro/an}
+        \end{itemize}
+      \end{block}
+
+      \begin{alertblock}{Risque de portefeuille (VaR)}
+        \small
+        \renewcommand{\arraystretch}{1.25}
+        \begin{tabular}{@{}lr@{}}
+          VaR 95\,\% (perte nette) & $-$30\,k\euro \\
+          VaR 99\,\% (perte nette) & $\approx\,0$\,\euro \\
+          CVaR 99\,\%              & +\,9\,k\euro \\
+          P(déficit)               & \textbf{0{,}89\,\%} \\
+        \end{tabular}
+      \end{alertblock}
+    \column{0.47\textwidth}
+      \includegraphics[width=\textwidth]{figures/05_profit_annuel_assureur.png}
+      {\centering\tiny\footnotesize Profit annuel assureur (20 ans)\par}
+  \end{columns}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Distribution des pertes agrégées}
+  \begin{columns}[c]
+    \column{0.50\textwidth}
+      \includegraphics[width=\textwidth]{figures/04_distribution_pertes_portefeuille.png}
+      {\centering\tiny\footnotesize Pertes nettes agrégées (100\,000 sim.)\par}
+    \column{0.47\textwidth}
+      \begin{block}{Lecture}
+        \begin{itemize}
+          \item La \textbf{grande majorité} des scénarios est profitable
+          \item La VaR 99\,\% $\approx 0$ : l'assureur est profitable dans
+            99\,\% des années
+          \item Seule la queue extrême (CVaR) expose au déficit
+        \end{itemize}
+      \end{block}
+
+      \begin{block}{Perspective de l'assuré}
+        \begin{itemize}
+          \item Gain net moyen sur 20 ans : \textbf{$-$3\,950\,\euro}
+          \item = coût du loading sur 20 ans
+          \item \textbf{36\,\%} des assurés ont un gain positif
+          \item Valeur de l'assurance = \textbf{réduction du risque}
+        \end{itemize}
+      \end{block}
+  \end{columns}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Rentabilité : synthèse assureur vs assuré --- Livrable 5}
+  \begin{columns}[t]
+    \column{0.48\textwidth}
+      \begin{block}{\faBuilding\ Perspective assureur}
+        \renewcommand{\arraystretch}{1.2}
+        \small
+        \begin{tabular}{@{}ll@{}}
+          Primes / an       & 475\,k\euro \\
+          Sinistres esp.    & 380\,k\euro \\
+          \textbf{Profit moy.} & \textbf{100\,k\euro/an} \\
+          P(déficit)        & 0{,}89\,\% \\
+          Années déf. / 20  & 0 \\
+        \end{tabular}
+
+        \textcolor{SuccessGreen}{\faCheckCircle}\ Modèle \textbf{rentable} et stable\\
+        \textcolor{SuccessGreen}{\faCheckCircle}\ Coûts admin. réduits ($-70\,\%$)\\
+        \textcolor{WarnOrange}{\faExclamationTriangle}\ Risque systémique (sécheresse nationale)
+      \end{block}
+    \column{0.48\textwidth}
+      \begin{block}{\faUser\ Perspective assuré}
+        \renewcommand{\arraystretch}{1.2}
+        \small
+        \begin{tabular}{@{}ll@{}}
+          Prime / an        & 950\,\euro \\
+          Payout si décl.   & 5\,000\,\euro \\
+          \textbf{Gain net / 20 ans} & \textbf{$-$3\,950\,\euro} \\
+          \% gain positif   & 36\,\% \\
+          Coût loading / an & 197\,\euro \\
+        \end{tabular}
+
+        \textcolor{SuccessGreen}{\faCheckCircle}\ Paiement \textbf{garanti} (code immuable)\\
+        \textcolor{SuccessGreen}{\faCheckCircle}\ Règlement $<$ 1 minute\\
+        \textcolor{WarnOrange}{\faExclamationTriangle}\ Gain net négatif en espérance\\[2pt]
+        \footnotesize\textit{L'assurance = transfert de risque, non un investissement.}
+      \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Stress test climatique --- Livrable 2}
+  \begin{columns}[c]
+    \column{0.62\textwidth}
+      \includegraphics[width=\textwidth]{figures/08_stress_test.png}
+      {\centering\tiny\footnotesize Impact des scénarios de stress sur la prime et le profit\par}
+    \column{0.35\textwidth}
+      \begin{alertblock}{Résultats clés}
+        \small
+        \renewcommand{\arraystretch}{1.3}
+        \begin{tabular}{@{}lcc@{}}
+          \toprule
+          Scénario & $p$ & Prime req. \\
+          \midrule
+          Normal   & 15\,\% & 950\,\euro \\
+          $-10\,\%$& 25\,\% & 1\,565\,\euro \\
+          $-20\,\%$& 39\,\% & 2\,430\,\euro \\
+          $-30\,\%$& 57\,\% & 3\,540\,\euro \\
+          \bottomrule
+        \end{tabular}
+      \end{alertblock}
+      \begin{alertblock}{\small \faExclamationTriangle\ Conclusion}
+        \small $-30\,\%$ de précipitations rend le produit \textbf{non viable} sans révision tarifaire.
+      \end{alertblock}
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Risque Moral \& Oracles}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Analyse du risque moral --- Livrable 3}
+  \begin{columns}[t]
+    \column{0.48\textwidth}
+      \begin{alertblock}{Assurance traditionnelle}
+        \begin{itemize}
+          \item[\textcolor{AlertRed}{\faTimesCircle}] \textbf{Ex ante} : moindre prévention
+          \item[\textcolor{AlertRed}{\faTimesCircle}] \textbf{Ex post} : déclaration exagérée
+          \item[\textcolor{AlertRed}{\faTimesCircle}] Collusion expert-assuré
+          \item[\textcolor{AlertRed}{\faTimesCircle}] Fraude à l'expertise
+        \end{itemize}
+      \end{alertblock}
+    \column{0.48\textwidth}
+      \begin{exampleblock}{Paramétrique blockchain}
+        \begin{itemize}
+          \item[\textcolor{SuccessGreen}{\faCheckCircle}] Trigger \textbf{objectif} (météo)
+          \item[\textcolor{SuccessGreen}{\faCheckCircle}] Aucune déclaration possible
+          \item[\textcolor{SuccessGreen}{\faCheckCircle}] Oracle = tiers mécanique impartial
+          \item[\textcolor{WarnOrange}{\faExclamationTriangle}] Sélection adverse résiduelle
+        \end{itemize}
+      \end{exampleblock}
+  \end{columns}
+
+  \begin{block}{Mécanisme d'élimination}
+    \small
+    \textit{Le payout est déclenché par la mesure d'une variable météorologique
+    \textbf{indépendante des actions de l'agriculteur} ---
+    il est impossible d'influencer la pluviométrie d'une région.}
+  \end{block}
+
+  \begin{exampleblock}{\small Risque moral résiduel}
+    \small
+    \begin{columns}[t]
+      \column{0.48\textwidth}
+        \warn{} Choix de cultures plus risquées (couverture disponible)
+      \column{0.48\textwidth}
+        \warn{} Sélection adverse : zones à fort risque surreprésentées
+    \end{columns}
+  \end{exampleblock}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Les oracles : fiabilité \& manipulation --- Livrable 4}
+  \begin{columns}[c]
+    \column{0.52\textwidth}
+      \begin{block}{Problème Oracle}
+        Un smart contract ne peut accéder qu'aux données \textbf{on-chain}.
+        L'oracle est le pont entre le monde réel et la blockchain.\\[4pt]
+        \textit{Si l'oracle est corruptible, toute la sécurité s'effondre.}
+      \end{block}
+
+      \smallskip
+      \textbf{Solution : Chainlink Decentralized Oracle Network}
+
+      \begin{tikzpicture}[scale=0.78, every node/.style={font=\tiny},
+          box/.style={draw, rounded corners, minimum height=0.5cm, text centered}]
+        \node[box, fill=orange!20, minimum width=1.5cm] (noaa) at (0,1.5) {NOAA};
+        \node[box, fill=orange!20, minimum width=1.5cm] (omet) at (2,1.5) {Open-Meteo};
+        \node[box, fill=orange!20, minimum width=1.5cm] (era) at (4,1.5) {ERA5};
+        \node[box, fill=AccentBlue!25, minimum width=3.8cm] (agg) at (2,0.7) {Agrégation --- médiane};
+        \node[box, fill=LightBlue, minimum width=3.8cm] (sc2) at (2,0) {Smart Contract};
+        \draw[-{Stealth}] (noaa) -- (agg);
+        \draw[-{Stealth}] (omet) -- (agg);
+        \draw[-{Stealth}] (era) -- (agg);
+        \draw[-{Stealth}] (agg) -- (sc2);
+      \end{tikzpicture}
+
+    \column{0.45\textwidth}
+      \small
+      \renewcommand{\arraystretch}{1.2}
+      \begin{tabular}{@{}p{2.2cm}p{2.5cm}@{}}
+        \toprule
+        \textbf{Attaque} & \textbf{Mitigation} \\
+        \midrule
+        1 node corrompu & Médiane de N nodes \\
+        Collusion & Staking LINK (slashing) \\
+        Station physique & Multi-sources \\
+        Données périmées & \texttt{\scriptsize ORACLE\_MAX\_AGE} \\
+        Replay attack & Vérif. timestamp \\
+        \bottomrule
+      \end{tabular}
+
+      \begin{alertblock}{\small Limite résiduelle}
+        Aucun oracle n'est parfait :
+        indisponibilité, délai de mise à jour,
+        coût LINK opérationnel.
+      \end{alertblock}
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Basis Risk \& Limites}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Le basis risk : principale limite}
+  \begin{columns}[c]
+    \column{0.50\textwidth}
+      \begin{alertblock}{Définition}
+        Le \textbf{basis risk} est l'écart entre la perte réelle
+        de l'agriculteur et l'indemnisation reçue :
+        \[
+          BR = \underbrace{L_{\text{réelle}}}_{\text{parcelle}} - \underbrace{\text{Payout}}_{\text{station oracle}}
+        \]
+      \end{alertblock}
+
+      \textbf{Modèle bivarié lognormal} ($\rho = 0{,}75$) :
+      \[
+        \ln X_{\text{parcelle}} = \rho \cdot Z_s + \sqrt{1-\rho^2}\,\varepsilon
+      \]
+
+      \begin{block}{Résultats ($N = 50\,000$)}
+        \begin{tabular}{@{}ll@{}}
+          $\sigma(BR)$       & $\mathbf{1\,870}$\,\euro \\
+          Sous-assurés       & \textbf{6{,}7\,\%} \\
+          Sur-indemnisés     & \textbf{6{,}7\,\%} \\
+        \end{tabular}
+      \end{block}
+
+    \column{0.47\textwidth}
+      \includegraphics[width=\textwidth]{figures/10_basis_risk_scatter.png}
+      {\centering\tiny\footnotesize Station vs Parcelle --- coloration par basis risk\par}
+  \end{columns}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Basis risk : distribution \& sensibilité à $\rho$}
+  \begin{columns}[c]
+    \column{0.48\textwidth}
+      \includegraphics[width=\textwidth]{figures/11_basis_risk_distribution.png}
+      {\centering\tiny\footnotesize Distribution du basis risk (événements actifs)\par}
+    \column{0.48\textwidth}
+      \includegraphics[width=\textwidth]{figures/12_basis_risk_sensibilite.png}
+      {\centering\tiny\footnotesize Sensibilité à la corrélation spatiale $\rho$\par}
+  \end{columns}
+
+  \begin{exampleblock}{Pistes de réduction du basis risk}
+    \begin{multicols}{2}
+      \begin{itemize}
+        \item Réseau dense de stations IoT
+        \item Données satellitaires (NDVI)
+        \item Trigger multi-indicateurs
+        \item Micro-zonage régional
+      \end{itemize}
+    \end{multicols}
+  \end{exampleblock}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}[shrink=3]{Limites réglementaires \& techniques}
+  \begin{columns}[t]
+    \column{0.48\textwidth}
+      \begin{alertblock}{Limites réglementaires}
+        \begin{itemize}
+          \item[\bad{}] Smart contracts \textbf{non reconnus} juridiquement en France (Code des assurances)
+          \item[\bad{}] \textbf{Solvabilité II} : exigences de capital incompatibles avec l'on-chain
+          \item[\bad{}] \textbf{KYC/AML} : pseudonymat vs. identification obligatoire
+          \item[\bad{}] \textbf{RGPD} : données immuables vs. droit à l'effacement
+        \end{itemize}
+      \end{alertblock}
+    \column{0.48\textwidth}
+      \begin{alertblock}{Limites actuarielles \& techniques}
+        \begin{itemize}
+          \item[\bad{}] Distribution non stationnaire (changement climatique)
+          \item[\bad{}] Corrélation spatiale --- portefeuille non diversifié en crise
+          \item[\bad{}] Volatilité ETH : prime en crypto $\neq$ valeur \euro{} fixe
+          \item[\bad{}] Accessibilité : wallet crypto difficile pour les agriculteurs
+        \end{itemize}
+      \end{alertblock}
+  \end{columns}
+
+  \begin{exampleblock}{Pistes d'amélioration}
+    \begin{multicols}{2}
+      \small
+      \begin{itemize}
+        \item Prime en \textbf{stablecoin} (USDC)
+        \item Indice NDVI (satellite Sentinel-2)
+        \item Modèle de prime dynamique
+        \item Réassurance on-chain (CAT bonds)
+      \end{itemize}
+    \end{multicols}
+  \end{exampleblock}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Synthèse \& Conclusion}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Bilan de la simulation}
+  \begin{columns}[c]
+    \column{0.52\textwidth}
+      \renewcommand{\arraystretch}{1.35}
+      \begin{tabular}{@{}lc@{}}
+        \toprule
+        \textbf{Indicateur} & \textbf{Valeur} \\
+        \midrule
+        P(sécheresse) & 15{,}2\,\% \\
+        Prime pure & 760\,\euro/an \\
+        IC 95\,\% prime & [749 ; 771] \\
+        Prime commerciale & 950\,\euro/an \\
+        Loss Ratio & 80\,\% \\
+        Profit assureur/an & $\approx$100\,k\euro \\
+        P(déficit) & \textbf{0{,}89\,\%} \\
+        CVaR 99\,\% & 9\,k\euro \\
+        $\sigma$(basis risk) & 1\,870\,\euro \\
+        Test KS (lognormalité) & p\,=\,0{,}048 \\
+        Simulation (N=10\,000) & \textbf{Monte Carlo} \\
+        \bottomrule
+      \end{tabular}
+    \column{0.45\textwidth}
+      \includegraphics[width=\textwidth]{figures/06_taux_sinistralite.png}
+      {\centering\tiny\footnotesize Taux sinistralité observé vs théorique\par}
+  \end{columns}
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Conclusion}
+  \begin{block}{Ce que nous avons démontré}
+    \begin{itemize}
+      \item[\good{}] La modélisation actuarielle lognormale est \textbf{calibrée et validée} ($p = 15{,}2\,\%$)
+      \item[\good{}] La prime commerciale de \textbf{950\,\euro/an} est actuariellement équitable avec LR = 80\,\%
+      \item[\good{}] Le portefeuille est \textbf{rentable} sur 20 ans avec P(déficit) $<\,1\,\%$
+      \item[\good{}] Le risque moral est \textbf{quasi-éliminé} par le mécanisme paramétrique
+      \item[\warn{}] Le basis risk ($\sigma \approx 1\,870$\,\euro) reste la \textbf{limite principale}
+      \item[\warn{}] Le stress test révèle une \textbf{forte sensibilité} au changement climatique
+    \end{itemize}
+  \end{block}
+
+  \begin{exampleblock}{Message central}
+    \centering
+    \textit{Les smart contracts n'éliminent pas l'actuariat ---
+    ils l'\textbf{automatisent} et l'\textbf{objectivent}.\\
+    La vraie valeur réside dans la réduction des coûts de transaction
+    et l'élimination des asymétries d'information.}
+  \end{exampleblock}
+
+\end{frame}
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+% ANNEXES
+% ══════════════════════════════════════════════════════════════════════════════
+\appendix
+
+\begin{frame}{Annexe A --- Gain net de l'assuré}
+  \begin{columns}[c]
+    \column{0.52\textwidth}
+      \includegraphics[width=\textwidth]{figures/07_gain_net_assure.png}
+      {\centering\tiny\footnotesize Distribution du gain net assuré sur 20 ans (N=50\,000 sim.)\par}
+    \column{0.45\textwidth}
+      \begin{block}{Interprétation}
+        \begin{itemize}
+          \item Gain net moyen : \textbf{$-$3\,950\,\euro}
+          \item $=$ coût du chargement 25\,\% sur 20 ans
+          \item \textbf{36\,\%} des assurés ont un gain positif
+          \item L'assurance est un \textbf{transfert de risque}, pas un investissement
+          \item Valeur : lisser le revenu intertemporel
+        \end{itemize}
+      \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Annexe B --- Structure du code Python}
+  \begin{block}{Architecture modulaire}
+    \begin{columns}[t]
+      \column{0.48\textwidth}
+        \texttt{simulation/}
+        \begin{itemize}
+          \item \texttt{main.py} --- orchestration
+          \item \texttt{src/config.py} --- paramètres
+          \item \texttt{src/climate.py} --- scénarios
+          \item \texttt{src/actuarial.py} --- prime, VaR
+          \item \texttt{src/portfolio.py} --- rentabilité
+          \item \texttt{src/basis\_risk.py} --- BR
+          \item \texttt{src/plots.py} --- 12 graphiques
+        \end{itemize}
+      \column{0.48\textwidth}
+        \texttt{results/}
+        \begin{itemize}
+          \item \texttt{figures/} --- 12 PNG individuels
+          \item \texttt{data/resultats\_annuels.csv}
+        \end{itemize}
+        \vspace{0.5em}
+        \begin{exampleblock}{\small Lancement}
+          \texttt{python main.py}
+        \end{exampleblock}
+    \end{columns}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Annexe C --- Références}
+  \footnotesize
+  \begin{itemize}
+    \item Nakamoto, S. (2008). \textit{Bitcoin: A Peer-to-Peer Electronic Cash System}
+    \item Szabo, N. (1997). \textit{Formalizing and Securing Relationships on Public Networks}
+    \item Jensen, N.D., Barrett, C.B. (2017). \textit{Agricultural Index Insurance for Development}. Annual Review of Resource Economics
+    \item Barnett, B.J., Mahul, O. (2007). \textit{Weather Index Insurance for Agriculture}. Am. Journal of Agricultural Economics
+    \item Chow, V.T. (1954). \textit{The log-probability law and its engineering applications}
+    \item \textbf{Fornier, Y.} (2024--2025). \textit{Comprendre la Blockchain et ses enjeux dans la stratégie d'une organisation --- Cours 4 : Les Smart Contracts}. ECE Paris MsC2 DEIA
+    \item Chainlink Labs. \textit{Decentralized Oracle Networks}. \texttt{docs.chain.link}
+    \item AXA Fizzy (2017). \textit{First blockchain-based flight-delay insurance}
+    \item OpenZeppelin. \textit{Smart Contract Security Best Practices}. \texttt{docs.openzeppelin.com}
+  \end{itemize}
+\end{frame}
+
+\end{document}

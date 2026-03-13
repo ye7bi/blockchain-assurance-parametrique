@@ -1,0 +1,23 @@
+# LaTeX build artifacts
+latex/*.aux
+latex/*.fdb_latexmk
+latex/*.fls
+latex/*.log
+latex/*.nav
+latex/*.out
+latex/*.snm
+latex/*.toc
+latex/*.vrb
+
+# Python
+simulation/src/__pycache__/
+simulation/__pycache__/
+**/*.pyc
+**/__pycache__/
+
+# Claude Code
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
