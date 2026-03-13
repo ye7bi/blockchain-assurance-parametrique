@@ -1,3 +1,7 @@
+# LaTeX — sources non versionnées
+latex/presentation.tex
+latex/compile.sh
+
 # LaTeX build artifacts
 latex/*.aux
 latex/*.fdb_latexmk

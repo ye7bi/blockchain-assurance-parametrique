@@ -38,10 +38,8 @@ Le travail couvre l'intégralité de la chaîne :
 
 ```
 ├── latex/
-│   ├── presentation.tex       # Source Beamer (30+ slides)
-│   ├── presentation.pdf       # PDF compilé
-│   ├── figures/               # 12 graphiques (PNG)
-│   └── compile.sh             # Compilation locale
+│   ├── presentation.pdf       # Présentation compilée (PDF)
+│   └── figures/               # 12 graphiques (PNG)
 │
 ├── simulation/
 │   ├── main.py                # Point d'entrée
@@ -70,25 +68,12 @@ python main.py
 # → génère simulation/results/figures/ (12 PNG) + simulation/results/data/resultats_annuels.csv
 ```
 
-## Compiler la présentation
-
-```bash
-cd latex
-bash compile.sh        # nécessite latexmk + pdflatex
-```
-
-Le PDF compilé est disponible directement : [`latex/presentation.pdf`](latex/presentation.pdf).
-
-Pour **Overleaf** : créer un projet, uploader `presentation.tex` + le dossier `figures/`.
-
----
-
 ## Livrables
 
 | # | Livrable | Fichier(s) |
 |---|---|---|
 | L1 | Modélisation actuarielle (lognormale, calibration, MC) | `src/actuarial.py`, `src/climate.py` |
 | L2 | Simulation financière (VaR, CVaR, stress test) | `src/portfolio.py` |
-| L3 | Analyse du risque moral | Slides 14–15, `presentation.tex` |
+| L3 | Analyse du risque moral | Slides 14–15 |
 | L4 | Fiabilité des oracles Chainlink | Slide 16, `AgricultureInsurance.sol` |
 | L5 | Rentabilité assureur & assuré | `src/portfolio.py`, slides 10–13 |
